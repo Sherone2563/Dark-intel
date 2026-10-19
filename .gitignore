@@ -269,3 +269,6 @@ $RECYCLE.BIN/
 
 # Keep the safe environment template in Git
 !.env.example
+
+# Local backup files
+/backend/app/main.py.before_entities.bak
