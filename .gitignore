@@ -1,0 +1,271 @@
+# ==============================================================================
+# Dark Intel Repository - .gitignore
+# Stack: Python | React/TypeScript | PostgreSQL | Neo4j | Threat Intelligence
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Environment Variables & Secret Material (Enforced Repository-Wide)
+# ------------------------------------------------------------------------------
+# Environment configuration files containing credentials and API keys
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Whitelist safe configuration templates
+!.env.example
+!.env.template
+
+# Cryptographic keys, certificates, and auth tokens (blocked everywhere, including in tests)
+*.pem
+*.key
+*.pub
+*.crt
+*.cert
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+
+# Cloud and service credentials (blocked everywhere, including in tests)
+credentials.json
+client_secrets*.json
+*.token
+service-account*.json
+
+# ------------------------------------------------------------------------------
+# 2. Threat Intelligence Data, Scrapes, & Quarantined Artifacts
+# ------------------------------------------------------------------------------
+# Targeted raw data, staging, and quarantine directories.
+# NOTE: Ignore contents (dir/*), NOT the directory itself (dir/), so .gitkeep works.
+/data/raw/*
+!/data/raw/.gitkeep
+
+/data/quarantine/*
+!/data/quarantine/.gitkeep
+
+/data/downloads/*
+!/data/downloads/.gitkeep
+
+/data/scrapes/*
+!/data/scrapes/.gitkeep
+
+/data/processed/*
+!/data/processed/.gitkeep
+
+/data/cache/*
+!/data/cache/.gitkeep
+
+/data/samples/*
+!/data/samples/.gitkeep
+
+/data/malware/*
+!/data/malware/.gitkeep
+
+# Raw packet captures (large network traces, blocked repo-wide)
+*.pcap
+*.pcapng
+
+# Root-level bulk archives (prevents accidental root dump drops without blocking fixture archives)
+/*.zip
+/*.tar.gz
+/*.tgz
+/*.7z
+/*.rar
+/*.iso
+
+# ------------------------------------------------------------------------------
+# 3. Generated Intelligence Reports & Investigative Exports
+# ------------------------------------------------------------------------------
+# Target generated output directories instead of blanket document extensions
+/reports/generated/*
+!/reports/generated/.gitkeep
+
+/reports/export/*
+!/reports/export/.gitkeep
+
+/exports/*
+!/exports/.gitkeep
+
+/dossiers/generated/*
+!/dossiers/generated/.gitkeep
+
+# ------------------------------------------------------------------------------
+# 4. Local Databases, Dumps, Volumes, & Logs
+# ------------------------------------------------------------------------------
+# Dedicated database backup & dump directories (preserves migrations/*.sql)
+/backups/*
+!/backups/.gitkeep
+
+/dumps/*
+!/dumps/.gitkeep
+
+/data/dumps/*
+!/data/dumps/.gitkeep
+
+/data/postgres/dumps/*
+!/data/postgres/dumps/.gitkeep
+
+# Root-anchored database dumps (catches ad-hoc exports at repo root, avoids subfolders)
+/*.dump
+/*.dump.gz
+/*.pgdump
+/*.rdb
+/*dump*.sql
+/*backup*.sql
+
+# Database storage dumps
+/data/postgres/**/*.dump
+/data/postgres/**/*.pgdump
+
+# Local runtime SQLite databases (scoped to root and runtime paths; fixtures in tests/ are tracked)
+/*.db
+/*.sqlite
+/*.sqlite3
+*.db-journal
+*.sqlite-journal
+*.db-wal
+*.db-shm
+/instance/*.db
+/instance/*.sqlite
+/instance/*.sqlite3
+/data/local/*.db
+/data/local/*.sqlite
+/data/local/*.sqlite3
+
+# Docker volumes & local engine storage directories
+/volumes/
+/data/postgres/data/
+/data/neo4j/
+/neo4j/data/
+/neo4j/logs/
+/neo4j/import/
+/neo4j/plugins/
+/neo4j/run/
+
+# Application and service logs
+*.log
+/logs/*
+!/logs/.gitkeep
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------------------------------------------
+# 5. Python Caches, Virtual Environments, & Tooling
+# ------------------------------------------------------------------------------
+# Bytecode and runtime caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Packaging and builds
+build/
+dist/
+*.egg-info/
+*.egg
+eggs/
+.eggs/
+
+# Testing and code coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+# Build artifacts
+build/
+dist/
+*.egg-info/
+# Logs
+*.log
+
+# Type checkers and linters
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+
+# Jupyter / Analysis Notebook checkpoints
+.ipynb_checkpoints/
+
+# ------------------------------------------------------------------------------
+# 6. Node / React / TypeScript Artifacts & Builds
+# ------------------------------------------------------------------------------
+# Dependencies
+node_modules/
+
+# Frontend builds
+/frontend/dist/
+/frontend/build/
+/frontend/.next/
+/frontend/out/
+/dist/
+/build/
+
+# Caches and test coverage
+.eslintcache
+.stylelintcache
+coverage/
+.turbo/
+.parcel-cache/
+storybook-static/
+
+# ------------------------------------------------------------------------------
+# 7. Operating System & IDE Artifacts
+# ------------------------------------------------------------------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# IDE / Editor workspace state
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+
+# VS Code (ignore user state, track shared workspace settings)
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Keep the safe environment template in Git
+!.env.example

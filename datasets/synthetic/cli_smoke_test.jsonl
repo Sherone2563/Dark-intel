@@ -1,0 +1,3 @@
+{"payload":{"handle":"synthetic_shadow_alpha","record_type":"forum_profile","dataset":"cli_smoke_test"},"observed_at":"2026-10-15T10:00:00Z","processing_version":"0.1.0"}
+{"payload":{"handle":"synthetic_shadow_beta","record_type":"forum_profile","dataset":"cli_smoke_test"},"observed_at":"2026-10-16T12:30:00Z","processing_version":"0.1.0"}
+{"payload":{"handle":"synthetic_shadow_alpha","record_type":"forum_post","text":"Synthetic research-only example text.","dataset":"cli_smoke_test"},"observed_at":"2026-10-16T14:00:00Z","processing_version":"0.1.0"}
