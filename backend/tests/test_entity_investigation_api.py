@@ -307,3 +307,36 @@ def test_investigation_includes_contradictory_evidence(
     assert item["analysis"]["confidence_band"] == "insufficient_evidence"
     assert len(item["evidence_records"]) == 2
     assert result["evidence_record_count"] == 2
+
+def test_investigation_excludes_unauthorized_source_evidence(
+    investigation_setup,
+):
+    setup = investigation_setup
+    add_evidence(
+        setup,
+        "supports",
+        "Synthetic authorization regression test.",
+    )
+
+    with SessionLocal() as db:
+        source = db.get(SourceModel, setup["source_ids"][0])
+        assert source is not None
+        source.authorized_for_use = False
+        db.commit()
+
+    response = client.get(
+        f"/entities/{setup['source_entity']['entity_id']}/investigation"
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+
+    relationship_result = next(
+        item for item in result["relationships"]
+        if item["relationship"]["relationship_id"]
+        == setup["relationship"]["relationship_id"]
+    )
+
+    assert relationship_result["evidence_records"] == []
+    assert relationship_result["analysis"]["evidence_ids"] == []
+    assert result["evidence_record_count"] == 0

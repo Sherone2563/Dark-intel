@@ -58,3 +58,22 @@ class EntityResponse(BaseModel):
     first_observed_at: datetime | None
     last_observed_at: datetime | None
     created_at: datetime
+class AnalystEntitySearchResult(BaseModel):
+    """Entity search result with authorized-data summary counts."""
+
+    entity: EntityResponse
+    authorized_observation_count: int
+    authorized_source_count: int
+    supported_relationship_count: int
+    contradicting_evidence_count: int
+    last_observed_at: datetime | None
+
+
+class AnalystEntitySearchResponse(BaseModel):
+    """Analyst-oriented entity search response."""
+
+    results: list[AnalystEntitySearchResult]
+    result_count: int
+    query: str
+    limit: int
+    offset: int

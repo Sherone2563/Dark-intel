@@ -1,11 +1,13 @@
 from uuid import UUID, uuid4
-
+from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from unittest.mock import MagicMock
 from sqlalchemy.exc import OperationalError
 from app.core.database import SessionLocal
+from app.models.observations import calculate_payload_sha256
 from app.main import app
 from app.models.db_models import ObservationModel, SourceModel
 from app.models.dataset_ingestion import DatasetImportError
@@ -184,3 +186,116 @@ def test_connection_failure_during_commit_stops_import(source_factory):
             import_jsonl_lines(db, source_id, [line])
 
         db.rollback.assert_called_once()
+def test_import_skips_duplicate_records_with_null_observed_at(
+    source_factory,
+):
+    source_id = UUID(str(source_factory()["source_id"]))
+    lines = [
+        '{"payload":{"handle":"null_timestamp_synthetic"}}',
+        '{"payload":{"handle":"null_timestamp_synthetic"}}',
+    ]
+
+    with SessionLocal() as db:
+        first = import_jsonl_lines(db, source_id, lines)
+
+    with SessionLocal() as db:
+        second = import_jsonl_lines(db, source_id, lines)
+
+    assert first.imported_count == 1
+    assert first.skipped_duplicate_count == 1
+    assert second.imported_count == 0
+    assert second.skipped_duplicate_count == 2
+
+def test_duplicate_observation_conflict_is_recognized():
+    from app.services.dataset_importer import (
+        _is_duplicate_observation_conflict,
+    )
+
+    class Diagnostic:
+        constraint_name = "uq_observations_source_hash_observed_at"
+
+    class OriginalError(Exception):
+        diag = Diagnostic()
+
+    error = IntegrityError("INSERT", {}, OriginalError())
+
+    assert _is_duplicate_observation_conflict(error) is True
+
+
+def test_unrelated_integrity_error_is_not_duplicate():
+    from app.services.dataset_importer import (
+        _is_duplicate_observation_conflict,
+    )
+
+    class Diagnostic:
+        constraint_name = "some_other_constraint"
+
+    class OriginalError(Exception):
+        diag = Diagnostic()
+
+    error = IntegrityError("INSERT", {}, OriginalError())
+
+    assert _is_duplicate_observation_conflict(error) is False
+
+def test_concurrent_duplicate_with_null_timestamp_is_skipped(
+    source_factory,
+    monkeypatch,
+):
+    source_id = UUID(source_factory()["source_id"])
+    line = '{"payload":{"handle":"synthetic_concurrent_duplicate"}}'
+
+    payload = {"handle": "synthetic_concurrent_duplicate"}
+    content_hash = calculate_payload_sha256(payload)
+    competing_insert_completed = False
+
+    with SessionLocal() as db:
+        original_scalar = db.scalar
+
+        def scalar_with_competing_insert(statement):
+            nonlocal competing_insert_completed
+
+            existing_id = original_scalar(statement)
+
+            if (
+                existing_id is None
+                and not competing_insert_completed
+            ):
+                competing_insert_completed = True
+
+                # Simulate another importer winning the race.
+                with SessionLocal() as competing_db:
+                    competing_db.add(
+                        ObservationModel(
+                            source_id=source_id,
+                            collected_at=datetime.now(timezone.utc),
+                            observed_at=None,
+                            payload=payload,
+                            content_sha256=content_hash,
+                            status="ingested",
+                            processing_version="0.1.0",
+                        )
+                    )
+                    competing_db.commit()
+
+            return existing_id
+
+        monkeypatch.setattr(db, "scalar", scalar_with_competing_insert)
+
+        result = import_jsonl_lines(db, source_id, [line])
+
+    assert competing_insert_completed is True
+    assert result.imported_count == 0
+    assert result.skipped_duplicate_count == 1
+    assert result.rejected_count == 0
+    assert result.errors == ()
+
+    with SessionLocal() as db:
+        saved = db.scalars(
+            select(ObservationModel).where(
+                ObservationModel.source_id == source_id,
+                ObservationModel.content_sha256 == content_hash,
+                ObservationModel.observed_at.is_(None),
+            )
+        ).all()
+
+    assert len(saved) == 1

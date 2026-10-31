@@ -299,3 +299,26 @@ def test_evidence_list_pagination(evidence_setup):
         f"/relationships/{relationship_id}/evidence?limit=0"
     )
     assert invalid_response.status_code == 422
+def test_create_evidence_rejects_unauthorized_source(evidence_setup):
+    setup = evidence_setup
+
+    with SessionLocal() as db:
+        source = db.get(SourceModel, setup["source_ids"][0])
+        assert source is not None
+
+        source.authorized_for_use = False
+        db.commit()
+
+    response = client.post(
+        "/evidence",
+        json={
+            "relationship_id": setup["relationship"]["relationship_id"],
+            "observation_id": setup["observation"]["observation_id"],
+            "polarity": "supports",
+            "evidence_description": "Synthetic authorization regression test.",
+            "limitations": "Test evidence only.",
+        },
+    )
+
+    assert response.status_code == 403
+    assert "unauthorized source" in response.json()["detail"].lower()

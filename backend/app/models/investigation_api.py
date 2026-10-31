@@ -58,11 +58,14 @@ class InvestigationAnalysis(BaseModel):
     neutral_count: int
     evidence_ids: list[UUID]
     methodology: str
+    qualifying_source_count: int
+    confidence_reason: str
     distinct_source_count: int
     evidence_items_sharing_sources: int
     source_reliability_evidence_counts: dict[str, int]
     source_quality_note: str
     distinct_observation_count: int
+
 
 
 class InvestigationRelationship(BaseModel):

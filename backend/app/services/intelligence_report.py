@@ -13,24 +13,31 @@ from app.models.timeline_api import EntityTimelineResponse
 
 METHODOLOGY = [
     (
-        "Relationship scores use a provisional evidence-balance method "
-        "based on supporting and contradicting evidence."
+        "Relationship scores use a provisional observation-balanced "
+        "evidence method based on supporting and contradicting evidence."
     ),
     (
-        "Neutral evidence is counted and reported but does not affect "
-        "the evidence-balance score."
+        "Each informative observation contributes at most one vote: "
+        "supporting evidence contributes 1, contradicting evidence "
+        "contributes 0, and both polarities in one observation contribute "
+        "0.5. Neutral evidence does not affect the score."
     ),
     (
         "A relationship score is not a probability of real-world identity "
         "or attribution."
     ),
     (
-        "Source reliability is reported in the investigation but is not "
-        "currently weighted in the linkage score."
+        "Only very_reliable, usually_reliable, and fairly_reliable sources "
+        "qualify toward independent corroboration."
     ),
     (
-        "Evidence records from the same source are not necessarily "
-        "independent corroboration."
+        "At least two distinct qualifying sources are required for a "
+        "confidence band. Multiple observations from one source count "
+        "as one source."
+    ),
+    (
+        "Source reliability determines corroboration eligibility but does "
+        "not change the numeric evidence-balance score."
     ),
 ]
 
@@ -48,9 +55,17 @@ LIMITATIONS = [
         "the same underlying observation or event."
     ),
     (
-        "Source reliability, evidence independence, collection coverage, "
-        "and other contextual factors are not fully incorporated into "
-        "the provisional linkage score."
+        "Distinct sources do not automatically guarantee independent "
+        "underlying information or corroboration."
+    ),
+    (
+        "Source reliability classifications and corroboration thresholds "
+        "are provisional policy choices and have not been scientifically "
+        "validated as attribution probabilities."
+    ),
+    (
+        "Collection coverage, source bias, evidence quality, and other "
+        "contextual factors may affect the interpretation of findings."
     ),
 ]
 

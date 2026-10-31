@@ -231,4 +231,83 @@ def test_analysis_reports_source_provenance(analysis_setup):
     assert result["distinct_observation_count"] == 1
     assert result["evidence_items_sharing_sources"] == 1
     assert result["source_reliability_evidence_counts"] == {"unknown": 2}
-    assert "does not yet weight source reliability" in result["source_quality_note"]
+    assert "qualifies toward independent corroboration" in result["source_quality_note"]
+    assert "does not change the numeric evidence-balance score" in result["source_quality_note"]
+
+def test_analysis_distinguishes_observations_from_sources(analysis_setup):
+    setup = analysis_setup
+
+    # Two distinct observations from the same source.
+    second_observation_response = client.post(
+        "/observations",
+        json={
+            "source_id": str(setup["source_ids"][0]),
+            "payload": {"synthetic_test": True, "record": 2},
+        },
+    )
+    assert second_observation_response.status_code == 201, (
+        second_observation_response.text
+    )
+    second_observation = second_observation_response.json()
+    setup["observation_ids"].append(
+        UUID(second_observation["observation_id"])
+    )
+
+    # One supporting evidence item per observation.
+    add_evidence(setup, "supports", "Support from the first observation.")
+
+    second_evidence_response = client.post(
+        "/evidence",
+        json={
+            "relationship_id": setup["relationship"]["relationship_id"],
+            "observation_id": second_observation["observation_id"],
+            "polarity": "supports",
+            "evidence_description": "Support from the second observation.",
+        },
+    )
+    assert second_evidence_response.status_code == 201, (
+        second_evidence_response.text
+    )
+    setup["evidence_ids"].append(
+        UUID(second_evidence_response.json()["evidence_id"])
+    )
+
+    relationship_id = setup["relationship"]["relationship_id"]
+    response = client.get(f"/relationships/{relationship_id}/analysis")
+
+    assert response.status_code == 200
+    result = response.json()
+
+    assert result["score"] == 100.0
+    assert result["confidence_band"] == "insufficient_evidence"
+    assert result["qualifying_source_count"] == 0
+    assert "At least two distinct sources" in result["confidence_reason"]
+    assert result["distinct_source_count"] == 1
+    assert result["distinct_observation_count"] == 2
+    assert result["supporting_count"] == 2
+    assert result["evidence_items_sharing_sources"] == 1
+def test_analysis_excludes_evidence_from_unauthorized_source(analysis_setup):
+    setup = analysis_setup
+    add_evidence(setup, "supports", "Synthetic authorization regression test.")
+
+    # Revoke authorization after the evidence has been created.
+    with SessionLocal() as db:
+        source = db.get(SourceModel, setup["source_ids"][0])
+        assert source is not None
+        source.authorized_for_use = False
+        db.commit()
+
+    response = client.get(
+        f"/relationships/{setup['relationship']['relationship_id']}/analysis"
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+
+    assert result["score"] is None
+    assert result["confidence_band"] == "insufficient_evidence"
+    assert result["evidence_ids"] == []
+    assert result["supporting_count"] == 0
+    assert result["contradicting_count"] == 0
+    assert result["distinct_source_count"] == 0
+    assert result["distinct_observation_count"] == 0

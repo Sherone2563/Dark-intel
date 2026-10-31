@@ -7,6 +7,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.exc import (
     DBAPIError,
+    IntegrityError,
     InterfaceError,
     OperationalError,
     SQLAlchemyError,
@@ -24,6 +25,11 @@ from app.models.observations import calculate_payload_sha256
 from app.services.dataset_ingestion import parse_jsonl_lines
 
 
+OBSERVATION_DEDUPLICATION_INDEX = (
+    "uq_observations_source_hash_observed_at"
+)
+
+
 def _rollback_safely(db: Session) -> None:
     """Attempt rollback without masking the original database error."""
     try:
@@ -38,6 +44,20 @@ def _is_connection_failure(exc: SQLAlchemyError) -> bool:
         return True
 
     return isinstance(exc, DBAPIError) and exc.connection_invalidated
+
+
+def _is_duplicate_observation_conflict(
+    exc: SQLAlchemyError,
+) -> bool:
+    """Recognize only a conflict with the observation deduplication index."""
+    if not isinstance(exc, IntegrityError):
+        return False
+
+    original_error = exc.orig
+    diagnostic = getattr(original_error, "diag", None)
+    constraint_name = getattr(diagnostic, "constraint_name", None)
+
+    return constraint_name == OBSERVATION_DEDUPLICATION_INDEX
 
 
 def import_jsonl_lines(
@@ -148,6 +168,10 @@ def import_jsonl_lines(
                     "stored, and the status of the failed record may "
                     "require verification."
                 ) from exc
+
+            if _is_duplicate_observation_conflict(exc):
+                skipped_duplicate_count += 1
+                continue
 
             errors.append(
                 DatasetLineError(

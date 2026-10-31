@@ -1,0 +1,258 @@
+@import "tailwindcss";
+
+:root {
+  font-family: "Inter", "Manrope", ui-sans-serif, system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color-scheme: dark;
+
+  --bg-primary: #0d0813;
+  --bg-secondary: #120b19;
+  --bg-card: #1b1024;
+  --bg-card-hover: #24152f;
+  --bg-elevated: #2a1835;
+
+  --accent-primary: #d69aff;
+  --accent-secondary: #b96bea;
+
+  --border-primary: #40264e;
+  --border-subtle: #302039;
+
+  --text-primary: #f2eaf7;
+  --text-secondary: #a99AAF;
+  --text-muted: #766982;
+
+  --severity-critical: #ff718c;
+  --severity-high: #ffc15e;
+  --severity-medium: #d49bff;
+  --severity-low: #b7a4c4;
+
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  position: relative;
+  isolation: isolate;
+  background: #090610;
+}
+
+/* =========================================
+   ECLIPSE NEXUS — CINEMATIC ENVIRONMENT
+   ========================================= */
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Nebula atmosphere and radial illumination */
+body::before {
+  background:
+    radial-gradient(
+      ellipse at 15% 20%,
+      rgba(112, 42, 166, 0.30),
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 85% 15%,
+      rgba(45, 65, 130, 0.24),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 50% 85%,
+      rgba(105, 35, 145, 0.22),
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 50% 45%,
+      rgba(35, 18, 55, 0.25),
+      transparent 65%
+    );
+}
+
+/* Technical grid and distant starfield */
+body::after {
+  opacity: 0.42;
+  background-image:
+    radial-gradient(
+      circle,
+      rgba(206, 170, 255, 0.65) 0.7px,
+      transparent 1.2px
+    ),
+    radial-gradient(
+      circle,
+      rgba(112, 190, 255, 0.45) 0.8px,
+      transparent 1.4px
+    ),
+    linear-gradient(
+      rgba(167, 139, 250, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(167, 139, 250, 0.045) 1px,
+      transparent 1px
+    );
+  background-size:
+    97px 113px,
+    173px 151px,
+    64px 64px,
+    64px 64px;
+  background-position:
+    12px 18px,
+    55px 72px,
+    center,
+    center;
+}
+
+/* Keep application content above decorative layers */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font-size: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  color: var(--text-primary);
+  background: rgba(185, 107, 234, 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+/* Network constellation — cinematic background layer */
+
+#root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.48;
+
+  background-image:
+    /* Network nodes */
+    radial-gradient(circle at 12% 24%, rgba(190, 137, 255, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle at 23% 38%, rgba(112, 190, 255, 0.75) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 34% 19%, rgba(190, 137, 255, 0.65) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 23%, rgba(112, 190, 255, 0.8) 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 39%, rgba(190, 137, 255, 0.75) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 72% 48%, rgba(190, 137, 255, 0.65) 0 2px, transparent 3px),
+    radial-gradient(circle at 18% 76%, rgba(112, 190, 255, 0.7) 0 2px, transparent 3px),
+    radial-gradient(circle at 83% 78%, rgba(190, 137, 255, 0.7) 0 2px, transparent 3px),
+
+    /* Fine network connections */
+    linear-gradient(28deg, transparent 49.7%, rgba(164, 120, 225, 0.16) 50%, transparent 50.3%),
+    linear-gradient(145deg, transparent 49.7%, rgba(100, 170, 235, 0.12) 50%, transparent 50.3%),
+    linear-gradient(75deg, transparent 49.7%, rgba(164, 120, 225, 0.12) 50%, transparent 50.3%);
+
+  background-size:
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    100% 100%,
+    560px 420px,
+    620px 480px,
+    680px 520px;
+
+  background-position:
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    center,
+    0 0,
+    180px 80px,
+    320px 160px;
+}
+/* Slow cinematic nebula movement */
+
+/* Slow cinematic nebula movement */
+
+body::before {
+  transform-origin: center;
+  animation: nebula-drift 20s ease-in-out infinite alternate;
+}
+
+@keyframes nebula-drift {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+    opacity: 0.65;
+  }
+
+  50% {
+    transform: scale(1.08) translate3d(-1%, 0.5%, 0);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1.12) translate3d(1%, -0.5%, 0);
+    opacity: 1;
+  }
+}

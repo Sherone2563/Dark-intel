@@ -53,3 +53,10 @@ class ObservationStatus(StrEnum):
     INGESTED = "ingested"
     VALIDATED = "validated"
     REJECTED = "rejected"
+class ProcessingRunStatus(StrEnum):
+    STARTED = "started"
+    IMPORTING = "importing"
+    EXTRACTING = "extracting"
+    COMPLETED = "completed"
+    COMPLETED_WITH_REJECTIONS = "completed_with_rejections"
+    FAILED = "failed"

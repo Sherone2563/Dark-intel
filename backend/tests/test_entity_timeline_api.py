@@ -313,3 +313,31 @@ def test_timeline_preserves_provenance_and_limitations(timeline_setup):
     assert event["evidence_limitations"] == "Synthetic test evidence only."
     assert event["source"]["authorized_for_use"] is True
     assert event["relationship_type"] == "associated_with"
+
+def test_timeline_excludes_unauthorized_source_evidence(timeline_setup):
+    setup = timeline_setup
+
+    observation = add_observation(
+        setup,
+        datetime.now(timezone.utc),
+    )
+    add_evidence(
+        setup,
+        observation,
+        "Synthetic authorization regression test.",
+    )
+
+    with SessionLocal() as db:
+        source = db.get(SourceModel, setup["source_ids"][0])
+        assert source is not None
+        source.authorized_for_use = False
+        db.commit()
+
+    response = client.get(
+        f"/entities/{setup['source_entity']['entity_id']}/timeline"
+    )
+
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert result["events"] == []
+    assert result["event_count"] == 0
