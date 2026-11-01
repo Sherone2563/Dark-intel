@@ -37,7 +37,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="UUID of an existing authorized source.",
     )
     parser.add_argument(
-            "--full-pipeline",
+        "--full-pipeline",
         action="store_true",
         help=(
             "Run import, handle extraction, and provenance processing "
@@ -122,17 +122,6 @@ def main() -> int:
 
     # Exit 2 signals a completed operation with rejected records.
     return 2 if rejected_count else 0
-
-    print(
-        json.dumps(
-            result.model_dump(mode="json"),
-            indent=2,
-            ensure_ascii=False,
-        )
-    )
-
-    # Exit 2 signals a completed import that contains rejected records.
-    return 2 if result.rejected_count else 0
 
 
 if __name__ == "__main__":
